@@ -1,0 +1,30 @@
+# Define registry paths and values to check
+$registryPaths = @(
+    "HKLM:\Software\Microsoft\Cryptography\Wintrust\Config",
+    "HKLM:\Software\Wow6432Node\Microsoft\Cryptography\Wintrust\Config"
+)
+
+$registryValueName = "EnableCertPaddingCheck"
+$expectedValue = "1"
+$allKeysExist = $true
+
+foreach ($path in $registryPaths) {
+    if (Test-Path $path) {
+        $value = Get-ItemProperty -Path $path -Name $registryValueName -ErrorAction SilentlyContinue
+        if ($null -eq $value -or $value.$registryValueName -ne $expectedValue) {
+            Write-Host "Registry key at $path does NOT have the expected value '$expectedValue'."
+            $allKeysExist = $false
+        } else {
+            Write-Host "Registry key at $path exists with the expected value '$expectedValue'."
+        }
+    } else {
+        Write-Host "Registry path $path does NOT exist."
+        $allKeysExist = $false
+    }
+}
+
+if ($allKeysExist) {
+    exit 0  # All checks passed
+} else {
+    exit 1  # One or more checks failed
+}
